@@ -1,12 +1,11 @@
 #![warn(clippy::pedantic)]
-#![feature(custom_inner_attributes)]
-#![rustfmt::skip]
 
-use tartan_bitfield::{get_bit, get_bits, set_bit, set_bits};
-use tartan_bitfield::bitfield;
 use core::mem;
+use tartan_bitfield::bitfield;
+use tartan_bitfield::{get_bit, get_bits, set_bit, set_bits};
 
 #[test]
+#[rustfmt::skip]
 #[allow(clippy::bool_assert_comparison)]
 fn test_get_bit() {
     for i in 0..8 {
@@ -87,6 +86,7 @@ fn test_get_bit_panic_u128_overflow() {
 }
 
 #[test]
+#[rustfmt::skip]
 fn test_set_bit() {
     // false => true
     assert_eq!(set_bit(0_u8,     0, true), 0x01);
@@ -177,6 +177,7 @@ fn test_set_bit_panic_u128_overflow() {
 }
 
 #[test]
+#[rustfmt::skip]
 #[allow(clippy::too_many_lines)]
 fn test_get_bits() {
     for i in 0..=8 {
@@ -323,6 +324,7 @@ fn test_get_bits() {
 }
 
 #[test]
+#[rustfmt::skip]
 fn test_set_bits() {
     for i in 0..=8 {
         assert_eq!(set_bits(0_u8, 0, i, 0), 0);
@@ -431,6 +433,7 @@ bitfield! {
 }
 
 #[test]
+#[rustfmt::skip]
 #[allow(clippy::bool_assert_comparison)]
 fn test_bitfield_basic() {
     let mut x = BasicBitfieldTest(0);
@@ -470,14 +473,8 @@ fn test_bitfield_basic() {
 
 #[test]
 fn test_bitfield_conversions() {
-    let examples: &[u32] = &[
-        0x0000_0000,
-        0xffff_ffff,
-        0xc35a_db69,
-        0x0123_4567,
-        0x89ab_cdef,
-        0xa5a5_a5a5,
-    ];
+    let examples: &[u32] =
+        &[0x0000_0000, 0xffff_ffff, 0xc35a_db69, 0x0123_4567, 0x89ab_cdef, 0xa5a5_a5a5];
 
     for inner_orig in examples.iter() {
         // Unsafe blocks below should be safe thanks to #[repr(transparent)]
@@ -487,9 +484,7 @@ fn test_bitfield_conversions() {
         let struct_b = BasicBitfieldTest::from(*inner_orig);
         let struct_c: BasicBitfieldTest = (*inner_orig).into();
         let struct_d: BasicBitfieldTest = unsafe { mem::transmute(*inner_orig) };
-        let struct_e = unsafe {
-            *(inner_orig as *const u32).cast::<BasicBitfieldTest>()
-        };
+        let struct_e = unsafe { *(inner_orig as *const u32).cast::<BasicBitfieldTest>() };
         assert_eq!(struct_a, struct_b);
         assert_eq!(struct_a, struct_c);
         assert_eq!(struct_a, struct_d);
@@ -500,9 +495,7 @@ fn test_bitfield_conversions() {
         let inner_b = u32::from(struct_a);
         let inner_c: u32 = struct_a.into();
         let inner_d: u32 = unsafe { mem::transmute(struct_a) };
-        let inner_e = unsafe {
-            *core::ptr::addr_of!(struct_a).cast::<u32>()
-        };
+        let inner_e = unsafe { *core::ptr::addr_of!(struct_a).cast::<u32>() };
         assert_eq!(*inner_orig, inner_a);
         assert_eq!(*inner_orig, inner_b);
         assert_eq!(*inner_orig, inner_c);

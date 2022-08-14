@@ -96,7 +96,6 @@ use core::ops;
 #[doc(hidden)]
 pub use paste::paste;
 
-
 /// Marker trait implemented by types defined with the [`bitfield`] macro.
 ///
 /// This mainly exists to allow type inference in the [`bitfield_accessors`] macro, but it
@@ -117,7 +116,6 @@ where
         self.into()
     }
 }
-
 
 /// Define a structure that wraps a number with accessors for certain bit ranges.
 ///
@@ -192,7 +190,6 @@ macro_rules! bitfield_without_debug {
         }
     };
 }
-
 
 /// Define getters and setters for certain bit ranges. The containing type must
 /// implement the [`Bitfield`] trait.
@@ -366,7 +363,6 @@ macro_rules! bitfield_accessors {
     };
 }
 
-
 /// Get a boolean reflecting a single bit of the value.
 ///
 /// `bit_num` starts as zero for the least significant bit.
@@ -388,7 +384,6 @@ where
     let position_mask = T::from(true) << bit_num;
     (val & position_mask) != T::default()
 }
-
 
 /// Create a copy of the value with a single bit modified.
 ///
@@ -412,7 +407,6 @@ where
     let position_mask = T::from(true) << bit_num;
     val & position_mask.not() | value_mask
 }
-
 
 /// Extract a range of bits from the value, shifted so the first bit of the subset is the
 /// least significant bit of the result.
@@ -439,7 +433,6 @@ where
     let field_width_mask = T::default().not().saturating_shl(field_width.into()).not();
     packed_val.saturating_shr(lsb.into()) & field_width_mask
 }
-
 
 /// Create a copy of the value with a subset of bits updated based on the passed value.
 ///
@@ -473,7 +466,6 @@ where
     let value_mask = field_val.saturating_shl(lsb.into()) & position_mask.not();
     packed_val & position_mask | value_mask
 }
-
 
 /// A type whose values can be truncated into another type. This is more explicit than
 /// `x as T`.
@@ -523,7 +515,6 @@ truncate_into_impl!(usize, u16);
 #[cfg(any(target_pointer_width = "64", target_pointer_width = "32"))]
 truncate_into_impl!(usize, u8);
 
-
 /// A type with an overflowing left shift operation. Also adds a saturating version.
 ///
 /// All basic numeric types have this operation, but there is no corresponding trait in
@@ -570,7 +561,6 @@ overflowing_shl_impl!(u32);
 overflowing_shl_impl!(u64);
 overflowing_shl_impl!(u128);
 overflowing_shl_impl!(usize);
-
 
 /// A type with an overflowing right shift operation. Also adds a saturating version.
 ///

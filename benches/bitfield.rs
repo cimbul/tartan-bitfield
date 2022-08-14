@@ -1,14 +1,10 @@
-#![feature(custom_test_frameworks)]
-#![test_runner(criterion::runner)]
-
 use core::convert::From;
 use criterion::{
-    black_box, measurement::Measurement, BenchmarkGroup, BenchmarkId, Criterion,
+    black_box, criterion_group, criterion_main, measurement::Measurement, BenchmarkGroup,
+    BenchmarkId, Criterion,
 };
-use criterion_macro::criterion;
 use tartan_bitfield as bitfield;
 use tartan_bitfield::bitfield;
-
 
 fn benchmark_group<F, M>(c: &mut Criterion<M>, s: &str, f: F)
 where
@@ -20,16 +16,12 @@ where
     g.finish();
 }
 
-
-#[criterion]
 fn bench_nothing(c: &mut Criterion) {
     // We do a lot of __micro__ micro benchmarking here. It's useful to have a reference
     // for how much overhead comes from Criterion itself.
     c.bench_function("do nothing", |b| b.iter(|| black_box(42)));
 }
 
-
-#[criterion]
 fn bench_set_bit(c: &mut Criterion) {
     // This is a macro instead of a function to avoid declaring a dozen traits for
     // different integer sizes, and also allow the caller to select which values to
@@ -90,7 +82,6 @@ fn bench_set_bit(c: &mut Criterion) {
         };
     }
 
-
     benchmark_group(c, "set_bit::<u128>", |g| {
         bench_set_bit_with_size!(u128, g, black_box(0_u128), black_box(79));
     });
@@ -104,8 +95,6 @@ fn bench_set_bit(c: &mut Criterion) {
     });
 }
 
-
-#[criterion]
 fn bench_bitfield(c: &mut Criterion) {
     bitfield! {
         struct ExampleBitfield(u32) {
@@ -264,3 +253,6 @@ fn bench_bitfield(c: &mut Criterion) {
         });
     });
 }
+
+criterion_group!(benches, bench_nothing, bench_set_bit, bench_bitfield);
+criterion_main!(benches);
