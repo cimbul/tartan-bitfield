@@ -1,15 +1,39 @@
-//! Define structures that wrap a number with accessors for certain bit ranges.
+//! This crate can be used to define structures with accessors for particular bits or
+//! bit ranges. Useful for dealing with registers and protocols.
+//!
+//! # Features
+//!
+//!   * **Performance**: Generated code is nearly identical to hand-rolled bit twiddling.
+//!   * **Safety**: Absolutely no unsafe code in the implementation or usage.
+//!   * **Portability**:
+//!     * `#![no_std]`-compatible out of the box.
+//!     * Unlike bit fields in C, the layout is predictable. See the section about
+//!       endianness below.
+//!     * Unlike Rust's `#[repr(packed, C)]`, each field has explicit bit ranges, rather
+//!       than relying on the ordering and size of other fields within the struct. While
+//!       specifying bit numbers may seem tedious, it can eliminate surprises, and it
+//!       usually corresponds directly to the way registers and protocols are defined in
+//!       datasheets.
+//!   * **Convenience**:
+//!     * Single-bit flags and multi-bit fields can be defined in the same structure.
+//!     * Bit ranges can be accessed as non-primitive, non-integer types (including other
+//!       bitfield structs) using appropriate [`Into`] and [`From`] implementations.
+//!     * The structs implement all the traits you would expect. See the documentation
+//!       for [`bitfield`]. A [`bitfield_without_debug`] macro is also available if you
+//!       want to provide your own debugging output.
+//!     * Accessors can be defined in a trait, which is useful for registers where where
+//!       some fields are common, but others are only defined in certain states. See
+//!       [`bitfield_accessors`].
 //!
 //! # Example
 //!
 //! ```
 //! # use tartan_bitfield::bitfield;
-//! #
 //! bitfield! {
-//!     // The structure will be a wrapper for a u32 value
+//!     // The structure will be a wrapper for a u32 value.
 //!     pub struct Example(u32) {
 //!         // Accessors for field `a` will refer to the first four least significant
-//!         // bytes of the wrapped value, bits 0, 1, 2, and 3. Note that like normal
+//!         // bits of the wrapped value, bits 0, 1, 2, and 3. Note that like normal
 //!         // Rust ranges, the end of the range is *exclusive*.
 //!         //
 //!         // The accessors will be public, and will take/return the four bits as a `u8`.
@@ -79,10 +103,53 @@
 //! // Reserved ranges influence equality, and they are all zero on `z`.
 //! assert_ne!(z, x);
 //! ```
+//!
+//! For lots more examples, see the [Tartan OS](https://github.com/cimbul/tartan-os)
+//! project that this crate was spun off from.
+//!
+//! # Endiannness and Bit Numbering
+//!
+//! Each bitfield wraps an underlying integer type. In the example above, `Example(u32)`
+//! wraps a `u32`. Bit numbers within the macro refer to the bits of the logical _value_,
+//! starting from the least significant bit = 0. They are not dependent on the order of
+//! the bytes of the `u32` representation in memory, a.k.a. endianness.
+//!
+//! The endianness of the underlying value is platform dependent. This is no different
+//! than any other integer value, and the context determines whether you need to worry
+//! about it.
+//!   * If the underlying representation is a `u8`, then byte order is irrelevant.
+//!   * If you are reading from a register, it's likely you want native byte order and
+//!     don't need to do anything special.
+//!   * If you are working with a network or bus protocol, it's likely you are serializing
+//!     or deserializing from a byte array. To convert using a specific endianness
+//!     regardless of platform, use the normal methods: for example, the builtins
+//!     [`u32::from_be_bytes`] and [`u64::to_le_bytes`], or a crate like
+//!     [byteorder](https://docs.rs/byteorder/latest/byteorder/).
+//!
+//! # Alternatives
+//!
+//! I have been using this in my personal OS project for a while, and it meets my needs
+//! better than other options. But you may be interested in a few other crates:
+//!   * [bitfield](https://github.com/dzamlo/rust-bitfield): Similar approach for
+//!     accessors and bit ranges, but a less obvious syntax.
+//!   * [bitflags](https://docs.rs/bitflags/latest/bitflags/): Works well for single-bit
+//!     flags that can be viewed as a collection.
+//!   * [bitvec](https://docs.rs/bitvec/latest/bitvec/): Another collection type to view
+//!     memory as a sequence of bits. Less focused on defining domain-specific structs.
+//!   * [modular-bitfield](https://docs.rs/modular-bitfield/latest/modular_bitfield/):
+//!     Field ordering and widths determine bit ranges. Structs can only be converted to
+//!     byte arrays, and only in little-endian order, regardless of platform endianness.
+//!     This can be undesirable when working with registers.
+//!   * [packed_struct](https://docs.rs/packed_struct/0.10.0/packed_struct/): Lots of
+//!     options, including bit numbering and endianness conversions. Structs are held
+//!     in unpacked form in memory, and only converted to packed form for serialization.
+//!     Depending on your access patterns, this may be better or worse (or it may not
+//!     matter at all).
 
 #![no_std]
 #![warn(missing_docs)]
 #![warn(clippy::pedantic)]
+#![allow(clippy::doc_markdown)]
 #![allow(clippy::inline_always)]
 #![allow(clippy::must_use_candidate)]
 #![allow(clippy::similar_names)]
@@ -429,7 +496,7 @@ where
         + ops::BitAnd<T, Output = T>,
 {
     let field_width = msb - lsb;
-    // e.g., 0b0000_0111 for U with a width 3 bytes from its MSB to LSB
+    // e.g., 0b0000_0111 for U with a width 3 bits from its MSB to LSB
     let field_width_mask = T::default().not().saturating_shl(field_width.into()).not();
     packed_val.saturating_shr(lsb.into()) & field_width_mask
 }
@@ -438,7 +505,7 @@ where
 ///
 /// Bits are numbered starting with zero for the least significant bit. The range of
 /// updated bits is `lsb..msb`, **exclusive** of `msb`. `field_val` is shifted left `lsb`
-/// bytes before being combined with `packed_val`.
+/// bits before being combined with `packed_val`.
 ///
 /// ```
 /// # use tartan_bitfield::set_bits;
