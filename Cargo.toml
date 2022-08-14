@@ -3,10 +3,12 @@ name = "tartan-bitfield"
 version = "0.1.0"
 authors = ["Tim Yates <cimbul@gmail.com>"]
 edition = "2021"
+description = "Define structures with accessors for particular bits or bit ranges"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-homepage = "https://github.com/cimbul/tartan-os"
-publish = false
+repository = "https://github.com/cimbul/tartan-bitfield"
+keywords = ["bitfields", "flags"]
+categories = ["rust-patterns", "no-std"]
 
 [dependencies]
 paste = "1.0.0"
