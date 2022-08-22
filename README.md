@@ -1,5 +1,10 @@
 # Tartan Bitfield
 
+[![Crate](https://img.shields.io/crates/v/tartan-bitfield)](https://crates.io/crates/tartan-bitfield)
+[![Docs](https://img.shields.io/docsrs/tartan-bitfield)](https://docs.rs/tartan-bitfield)
+[![Build](https://github.com/cimbul/tartan-bitfield/actions/workflows/build.yml/badge.svg)](https://github.com/cimbul/tartan-bitfield/actions/workflows/build.yml)
+![License](https://img.shields.io/crates/l/tartan-bitfield)
+
 This crate can be used to define structures with accessors for particular bits or
 bit ranges. Useful for dealing with registers and protocols.
 
@@ -146,13 +151,15 @@ better than other options. But you may be interested in a few other crates:
     in unpacked form in memory, and only converted to packed form for serialization.
     Depending on your access patterns, this may be better or worse (or it may not
     matter at all).
+      * For an analogue to `pack_struct`'s `PrimitiveEnum`, see the
+        [`tartan-c-enum`](https://github.com/cimbul/tartan-c-enum) crate.
 
 ## Installation
 
 Add to your Cargo.toml:
 ```
 [dependencies]
-tartan-bitfield = 0.1.0
+tartan-bitfield = 1.0.0
 ```
 
 ## Development
