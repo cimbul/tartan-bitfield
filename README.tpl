@@ -1,5 +1,10 @@
 # Tartan Bitfield
 
+[![Crate](https://img.shields.io/crates/v/tartan-bitfield)](https://crates.io/crates/tartan-bitfield)
+[![Docs](https://img.shields.io/docsrs/tartan-bitfield)](https://docs.rs/tartan-bitfield)
+[![Build](https://github.com/cimbul/tartan-bitfield/actions/workflows/build.yml/badge.svg)](https://gitub.com/cimbul/tartan-bitfield/actions/workflows/build.yml)
+![License](https://img.shields.io/crates/l/tartan-bitfield)
+
 {{readme}}
 
 ## Installation
