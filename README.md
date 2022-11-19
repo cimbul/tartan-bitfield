@@ -108,6 +108,17 @@ assert_eq!(z, Example(0xfa04_9e0b));
 
 // Reserved ranges influence equality, and they are all zero on `z`.
 assert_ne!(z, x);
+
+// Alternatively, you can use the `with_` methods, which return a new value instead
+// of mutating in place.
+let mut w = x
+    .with_a(0x6)
+    .with_b(0x9f3)
+    .with_c(0xd)
+    .with_d(false)
+    .with_e(SubFields(0x2b));
+assert_eq!(w, Example(0xac8d_7cd6));
+assert_eq!(x, Example(0xfa84_9e1b));
 ```
 
 For lots more examples, see the [Tartan OS](https://github.com/cimbul/tartan-os)

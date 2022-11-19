@@ -443,6 +443,15 @@ fn test_bitfield_basic() {
     assert_eq!(x.d(), false);
     assert_eq!(x.e(), 0);
 
+    let a = x
+        .with_a(0xff)
+        .with_b(0x1f)
+        .with_c(0x1f)
+        .with_d(true)
+        .with_e(0x03);
+    assert_eq!(a.0, 0xff00_ffc7);
+    assert_eq!(x.0, 0);
+
     x.set_a(0xff);
     x.set_b(0x1f);
     x.set_c(0x1f);
@@ -456,6 +465,15 @@ fn test_bitfield_basic() {
     assert_eq!(y.c(), 0x1f);
     assert_eq!(y.d(), true);
     assert_eq!(y.e(), 0x03);
+
+    let b = y
+        .with_a(0)
+        .with_b(0)
+        .with_c(0)
+        .with_d(false)
+        .with_e(0);
+    assert_eq!(b.0, 0x00ff_0038);
+    assert_eq!(y.0, 0xffff_ffff);
 
     y.set_a(0);
     y.set_b(0);
