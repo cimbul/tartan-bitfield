@@ -102,6 +102,17 @@
 //!
 //! // Reserved ranges influence equality, and they are all zero on `z`.
 //! assert_ne!(z, x);
+//!
+//! // Alternatively, you can use the `with_` methods, which return a new value instead
+//! // of mutating in place.
+//! let mut w = x
+//!     .with_a(0x6)
+//!     .with_b(0x9f3)
+//!     .with_c(0xd)
+//!     .with_d(false)
+//!     .with_e(SubFields(0x2b));
+//! assert_eq!(w, Example(0xac8d_7cd6));
+//! assert_eq!(x, Example(0xfa84_9e1b));
 //! ```
 //!
 //! For lots more examples, see the [Tartan OS](https://github.com/cimbul/tartan-os)
@@ -370,10 +381,16 @@ macro_rules! bitfield_accessors {
     ] => {
         $crate::paste! {
             $( #[$meta] )*
+            #[inline(always)]
             $vis fn [< set_ $field >](&mut self, value: bool) {
+                *self = self.[< with_ $field >](value);
+            }
+
+            $( #[$meta] )*
+            $vis fn [< with_ $field >](&mut self, value: bool) -> Self {
                 let packed = <Self as $crate::Bitfield<_>>::value(*self);
-                *self = <Self as $crate::Bitfield<_>>::new(
-                    $crate::set_bit(packed, $bit, value));
+                <Self as $crate::Bitfield<_>>::new(
+                    $crate::set_bit(packed, $bit, value))
             }
         }
     };
@@ -422,11 +439,17 @@ macro_rules! bitfield_accessors {
     ] => {
         $crate::paste! {
             $( #[$meta] )*
+            #[inline(always)]
             $vis fn [< set_ $field >](&mut self, value: $interface_type) {
+                *self = self.[< with_ $field >](value);
+            }
+
+            $( #[$meta] )*
+            $vis fn [< with_ $field >](&self, value: $interface_type) -> Self {
                 let underlying: $underlying_type = value.into();
                 let packed = <Self as $crate::Bitfield<_>>::value(*self);
-                *self = <Self as $crate::Bitfield<_>>::new(
-                    $crate::set_bits(packed, $lsb, $msb, underlying.into()));
+                <Self as $crate::Bitfield<_>>::new(
+                    $crate::set_bits(packed, $lsb, $msb, underlying.into()))
             }
         }
     };
