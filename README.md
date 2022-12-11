@@ -173,7 +173,7 @@ better than other options. But you may be interested in a few other crates:
 Add to your Cargo.toml:
 ```
 [dependencies]
-tartan-bitfield = 1.1.0
+tartan-bitfield = 1.2.0
 ```
 
 ## Development
