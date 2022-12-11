@@ -33,8 +33,11 @@
 //!     // The structure will be a wrapper for a u32 value.
 //!     pub struct Example(u32) {
 //!         // Accessors for field `a` will refer to the first four least significant
-//!         // bits of the wrapped value, bits 0, 1, 2, and 3. Note that like normal
-//!         // Rust ranges, the end of the range is *exclusive*.
+//!         // bits of the wrapped value, bits 0, 1, 2, and 3.
+//!         //
+//!         // Note that like normal Rust ranges:
+//!         //   * `[0..4]` does not include bit 4
+//!         //   * `[0..=4]` includes bit 4
 //!         //
 //!         // The accessors will be public, and will take/return the four bits as a `u8`.
 //!         [0..4] pub a: u8,
@@ -45,7 +48,7 @@
 //!
 //!         // Accessors for field `b` will refer to the twelve bits starting at bit 6,
 //!         // but they will not be public. They will take/return the 12 bits as a `u16`.
-//!         [6..18] b: u16,
+//!         [6..=17] b: u16,
 //!
 //!         // Note that this bit range overlaps with `b`. This is allowed.
 //!         [16..20] pub c: u8,
@@ -321,7 +324,7 @@ macro_rules! bitfield_accessors {
     [
         $(
             $( #[$meta:meta] )*
-            [ $lsb:literal $( .. $msb:literal )? ]
+            [ $( $range:tt )* ]
             $vis:vis $field:ident
             $( : $underlying_type:ty $( as $interface_type:ty )? )?
         ),*
@@ -331,7 +334,7 @@ macro_rules! bitfield_accessors {
             $crate::bitfield_accessors! {
                 @field getter
                 $( #[$meta] )*
-                [ $lsb $( .. $msb )? ]
+                [ $( $range )* ]
                 $vis $field
                 $( : $underlying_type $( as $interface_type )? )?
             }
@@ -341,7 +344,7 @@ macro_rules! bitfield_accessors {
             $crate::bitfield_accessors! {
                 @field setter
                 $( #[$meta] )*
-                [ $lsb $( .. $msb )? ]
+                [ $( $range )* ]
                 $vis $field
                 $( : $underlying_type $( as $interface_type )? )?
             }
@@ -412,6 +415,20 @@ macro_rules! bitfield_accessors {
     };
 
     [
+        @field $accessor_type:tt
+        $( #[$meta:meta] )*
+        [ $lsb:literal ..= $msb:literal ]
+        $vis:vis $field:ident
+        : $field_type:ty
+    ] => {
+        $crate::bitfield_accessors! {
+            @field $accessor_type
+            $( #[$meta] )*
+            [$lsb..=$msb] $vis $field: $field_type as $field_type
+        }
+    };
+
+    [
         @field getter
         $( #[$meta:meta] )*
         [ $lsb:literal .. $msb:literal ]
@@ -425,6 +442,25 @@ macro_rules! bitfield_accessors {
                 let packed = <Self as $crate::Bitfield<_>>::value(*self);
                 let underlying: $underlying_type =
                     $crate::get_bits(packed, $lsb, $msb).truncate_into();
+                underlying.into()
+            }
+        }
+    };
+
+    [
+        @field getter
+        $( #[$meta:meta] )*
+        [ $lsb:literal ..= $msb:literal ]
+        $vis:vis $field:ident
+        : $underlying_type:ty as $interface_type:ty
+    ] => {
+        $crate::paste! {
+            $( #[$meta] )*
+            $vis fn $field(&self) -> $interface_type {
+                use $crate::TruncateInto;
+                let packed = <Self as $crate::Bitfield<_>>::value(*self);
+                let underlying: $underlying_type =
+                    $crate::get_bits(packed, $lsb, $msb + 1).truncate_into();
                 underlying.into()
             }
         }
@@ -450,6 +486,30 @@ macro_rules! bitfield_accessors {
                 let packed = <Self as $crate::Bitfield<_>>::value(*self);
                 <Self as $crate::Bitfield<_>>::new(
                     $crate::set_bits(packed, $lsb, $msb, underlying.into()))
+            }
+        }
+    };
+
+    [
+        @field setter
+        $( #[$meta:meta] )*
+        [ $lsb:literal ..= $msb:literal ]
+        $vis:vis $field:ident
+        : $underlying_type:ty as $interface_type:ty
+    ] => {
+        $crate::paste! {
+            $( #[$meta] )*
+            #[inline(always)]
+            $vis fn [< set_ $field >](&mut self, value: $interface_type) {
+                *self = self.[< with_ $field >](value);
+            }
+
+            $( #[$meta] )*
+            $vis fn [< with_ $field >](&self, value: $interface_type) -> Self {
+                let underlying: $underlying_type = value.into();
+                let packed = <Self as $crate::Bitfield<_>>::value(*self);
+                <Self as $crate::Bitfield<_>>::new(
+                    $crate::set_bits(packed, $lsb, $msb + 1, underlying.into()))
             }
         }
     };

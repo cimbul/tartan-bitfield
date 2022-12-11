@@ -427,7 +427,7 @@ bitfield! {
         [ 6..11] pub c: u8,  // 5b, overlaps byte boundary
         // 3..6 skipped entirely
         [ 2    ] pub d,      // single bit (bool)
-        [ 0.. 2] pub e: u8,  // 2b, contains LSB
+        [ 0..=1] pub e: u8,  // 2b, contains LSB
         [10..20] pub z: u16, // 10b, overlaps with a & b
     }
 }
