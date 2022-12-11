@@ -39,8 +39,11 @@ bitfield! {
     // The structure will be a wrapper for a u32 value.
     pub struct Example(u32) {
         // Accessors for field `a` will refer to the first four least significant
-        // bits of the wrapped value, bits 0, 1, 2, and 3. Note that like normal
-        // Rust ranges, the end of the range is *exclusive*.
+        // bits of the wrapped value, bits 0, 1, 2, and 3.
+        //
+        // Note that like normal Rust ranges:
+        //   * `[0..4]` does not include bit 4
+        //   * `[0..=4]` includes bit 4
         //
         // The accessors will be public, and will take/return the four bits as a `u8`.
         [0..4] pub a: u8,
@@ -51,7 +54,7 @@ bitfield! {
 
         // Accessors for field `b` will refer to the twelve bits starting at bit 6,
         // but they will not be public. They will take/return the 12 bits as a `u16`.
-        [6..18] b: u16,
+        [6..=17] b: u16,
 
         // Note that this bit range overlaps with `b`. This is allowed.
         [16..20] pub c: u8,
@@ -170,7 +173,7 @@ better than other options. But you may be interested in a few other crates:
 Add to your Cargo.toml:
 ```
 [dependencies]
-tartan-bitfield = 1.1.0
+tartan-bitfield = 1.2.0
 ```
 
 ## Development

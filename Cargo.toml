@@ -1,6 +1,6 @@
 [package]
 name = "tartan-bitfield"
-version = "1.1.0"
+version = "1.2.0"
 authors = ["Tim Yates <cimbul@gmail.com>"]
 edition = "2021"
 description = "Define structures with accessors for particular bits or bit ranges"
