@@ -74,13 +74,13 @@ fn test_get_bit() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "attempt to shift left with overflow")]
 fn test_get_bit_panic_u8_overflow() {
     let _ = get_bit(0_u8, 8);
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "attempt to shift left with overflow")]
 fn test_get_bit_panic_u128_overflow() {
     let _ = get_bit(0_u128, 128);
 }
@@ -165,13 +165,13 @@ fn test_set_bit() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "attempt to shift left with overflow")]
 fn test_set_bit_panic_u8_overflow() {
     let _ = set_bit(0_u8, 8, true);
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "attempt to shift left with overflow")]
 fn test_set_bit_panic_u128_overflow() {
     let _ = set_bit(0_u128, 128, true);
 }
@@ -494,7 +494,7 @@ fn test_bitfield_conversions() {
     let examples: &[u32] =
         &[0x0000_0000, 0xffff_ffff, 0xc35a_db69, 0x0123_4567, 0x89ab_cdef, 0xa5a5_a5a5];
 
-    for inner_orig in examples.iter() {
+    for inner_orig in examples {
         // Unsafe blocks below should be safe thanks to #[repr(transparent)]
 
         // Convert from underlying representation to bitfield struct
@@ -502,7 +502,7 @@ fn test_bitfield_conversions() {
         let struct_b = BasicBitfieldTest::from(*inner_orig);
         let struct_c: BasicBitfieldTest = (*inner_orig).into();
         let struct_d: BasicBitfieldTest = unsafe { mem::transmute(*inner_orig) };
-        let struct_e = unsafe { *(inner_orig as *const u32).cast::<BasicBitfieldTest>() };
+        let struct_e = unsafe { *std::ptr::from_ref::<u32>(inner_orig).cast::<BasicBitfieldTest>() };
         assert_eq!(struct_a, struct_b);
         assert_eq!(struct_a, struct_c);
         assert_eq!(struct_a, struct_d);

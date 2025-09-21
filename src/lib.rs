@@ -630,6 +630,7 @@ macro_rules! truncate_into_impl {
     ($source:ty, $dest:ty) => {
         impl TruncateInto<$dest> for $source {
             #[inline(always)]
+            #[allow(clippy::cast_possible_truncation)]
             fn truncate_into(self) -> $dest {
                 self as $dest
             }
